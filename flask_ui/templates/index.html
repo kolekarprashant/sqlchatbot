@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>LangChain Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chat-container {
+            background-color: #fff;
+            width: 400px;
+            height: 500px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .chat-messages {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .chat-messages p {
+            margin: 4px 0;
+        }
+
+        .chat-form {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+
+        .chat-form input[type="text"] {
+            flex: 1;
+            padding: 6px;
+            font-size: 13px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .chat-form input[type="submit"] {
+            padding: 6px 12px;
+            margin-left: 6px;
+            border: none;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 13px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .chat-form input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+
+        strong {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            LangChain Chatbot
+        </div>
+        <div class="chat-messages" id="chat-box">
+            {% for chat in chat_history %}
+                <p><strong>You:</strong> {{ chat.question }}</p>
+                <p><strong>Bot:</strong> {{ chat.response }}</p>
+            {% endfor %}
+        </div>
+        <form method="post" class="chat-form">
+            <input type="text" name="user_input" placeholder="Ask something..." required>
+            <input type="submit" value="Send">
+        </form>
+    </div>
+
+    <script>
+        // Auto-scroll to bottom of chat on load
+        const chatBox = document.getElementById("chat-box");
+        chatBox.scrollTop = chatBox.scrollHeight;
+    </script>
+</body>
+</html>
