@@ -19,7 +19,8 @@ AZURE_API_VERSION = "2024-12-01-preview"
 def get_llm():
     return AzureChatOpenAI(
         azure_deployment=AZURE_DEPLOYMENT_NAME,
-        api_key=AZURE_API_KEY,
+        #api_key=AZURE_API_KEY,
+        api_key="WCNEbWiHAYC0Us4aan2TYCbpn8jMLALfZ1CbN2f8KosNXYqAqK5nJQQJ99BDACYeBjFXJ3w3AAABACOG3COf",
         api_version=AZURE_API_VERSION,
         azure_endpoint=AZURE_ENDPOINT,
         openai_api_type="azure",
