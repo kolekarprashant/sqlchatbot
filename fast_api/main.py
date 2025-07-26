@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
-from agent_utils import get_sql_agent
+from fast_api.agent_utils import get_sql_agent
 import hashlib
 from langchain_core.messages import HumanMessage
 from uuid import uuid4
