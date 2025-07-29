@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from agent_utils import get_sql_agent_with_memory
-from langchain_core.messages import HumanMessage,AIMessage
+from .agent_utils import get_sql_agent_with_memory
 
 app = FastAPI(debug=True)
 
