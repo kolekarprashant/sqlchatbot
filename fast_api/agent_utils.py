@@ -1,12 +1,15 @@
 from langchain_openai import AzureChatOpenAI
 from langchain_community.utilities.sql_database import SQLDatabase
-from langchain.agents.agent_toolkits import create_sql_agent
+from langchain.agents import AgentExecutor,create_tool_calling_agent
 from sqlalchemy import create_engine
 import os
 from dotenv import load_dotenv
 import sqlite3
 import requests
 from sqlalchemy.pool import StaticPool
+from langchain.memory import ConversationBufferMemory
+from langchain.agents.agent_toolkits.sql.toolkit import SQLDatabaseToolkit
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
 # Load environment variables
 load_dotenv()
@@ -23,13 +26,7 @@ def get_llm():
         api_key="WCNEbWiHAYC0Us4aan2TYCbpn8jMLALfZ1CbN2f8KosNXYqAqK5nJQQJ99BDACYeBjFXJ3w3AAABACOG3COf",
         api_version=AZURE_API_VERSION,
         azure_endpoint=AZURE_ENDPOINT,
-        openai_api_type="azure",
-        model_kwargs={
-        "messages": [
-            {"role": "system", "content": "You are a helpful SQL assistant. Always return only SQL queries."}
-        ]
-    }
-        
+        openai_api_type="azure"
     )
 
 def get_sql_database():
@@ -40,13 +37,38 @@ def get_sql_database():
                            connect_args={"check_same_thread": False})
     return SQLDatabase(engine)
 
-def get_sql_agent():
+def get_sql_agent_with_memory(session_id: str, memory_store: dict):
     llm = get_llm()
     db = get_sql_database()
-    return create_sql_agent(
-        llm=llm,
-        db=db,
-        agent_type="openai-tools",
+    toolkit = SQLDatabaseToolkit(llm=llm, db=db)
+
+    # Create or reuse memory per session
+    if session_id not in memory_store:
+        memory_store[session_id] = ConversationBufferMemory(
+            memory_key="chat_history",
+            return_messages=True,
+            output_key="output"
+        )
+
+    memory = memory_store[session_id]
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", 
+     "You are a helpful assistant that only answers questions by executing SQL queries on the provided database. "
+     "You must only use the tools given to retrieve information. "
+     "If the user asks anything outside the scope of the database (like weather, current events, etc.), respond with: "
+     "'I'm only able to help with database-related questions.'"),
+        MessagesPlaceholder(variable_name="chat_history"),
+        ("human", "{input}"),
+        MessagesPlaceholder(variable_name="agent_scratchpad"),
+    ])
+
+    # Create agent and wrap it in executor
+    agent = create_tool_calling_agent(llm=llm, tools=toolkit.get_tools(),prompt=prompt)
+    executor = AgentExecutor(
+        agent=agent,
+        tools=toolkit.get_tools(),
+        memory=memory,
         verbose=True,
         handle_parsing_errors=True
     )
+    return executor

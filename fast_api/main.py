@@ -1,36 +1,21 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from pydantic import BaseModel
-from fast_api.agent_utils import get_sql_agent
-import hashlib
-from langchain_core.messages import HumanMessage
-from uuid import uuid4
+from agent_utils import get_sql_agent_with_memory
+from langchain_core.messages import HumanMessage,AIMessage
 
 app = FastAPI(debug=True)
 
 class QueryRequest(BaseModel):
     question: str
+    session_id:str
 
-chat_histories = {}
-
-# Function to get a simple in-memory session ID based on client IP
-def get_session_id(request: Request) -> str:
-    return hashlib.md5(request.client.host.encode()).hexdigest()
-
-
-agent = get_sql_agent()
+# Memory store per session
+memory_store = {}
 
 @app.post("/query")
 async def query_db(request: QueryRequest):
-        session_id = str(uuid4())
-        user_input = request.question
-        if session_id not in chat_histories:
-            chat_histories[session_id] = []
-
-        history = chat_histories[session_id]
-        history.append(HumanMessage(user_input))
-        response = agent.invoke({
-             "input": user_input,
-             "chat_history": history
-        })
-        return {"question": user_input, "response":  response["output"]}
-    
+    user_input = request.question
+    session_id = request.session_id
+    agent = get_sql_agent_with_memory(session_id, memory_store)
+    response = agent.invoke({"input": user_input})
+    return {"question": user_input,"response": response["output"]}
