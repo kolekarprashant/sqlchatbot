@@ -61,6 +61,9 @@ def get_sql_agent_with_memory(session_id: str, memory_store: dict):
         ("human", "{input}"),
         MessagesPlaceholder(variable_name="agent_scratchpad"),
     ])
+    print("Session ID:", session_id)
+    print("Current memory keys:", list(memory_store.keys()))
+    print("Memory contents:", memory_store[session_id].load_memory_variables({}))
 
     # Create agent and wrap it in executor
     agent = create_tool_calling_agent(llm=llm, tools=toolkit.get_tools(),prompt=prompt)
