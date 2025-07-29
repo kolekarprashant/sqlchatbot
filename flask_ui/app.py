@@ -18,6 +18,9 @@ def make_session_non_permanent():
 
 @app.route("/", methods=["GET", "POST"])
 def index():
+    if request.method == "GET":
+        session["chat_history"] = []
+        
     if "chat_history" not in session:
         session["chat_history"] = []
 
